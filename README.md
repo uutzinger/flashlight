@@ -1,10 +1,18 @@
 # Flashlight
+An async server to control PWM pin for Flashlight intensity control.
+
 Raspi PWM is attached to the Meanwell constant current LED driver control signal.
-On, Off, Humming is sent via ZMQ to service program to execute the functions.
+Supports
+- On / Off, 
+- Humming
+- Intensity
+
+Request are sent via ZMQ to this server to execute the functions.
 
 ## PWM on Raspberry Pi
-There are two independent PWM controllers. I2S is using one of them.
 There is soft and hard ware PWM where hardware PWM uses DMA to set the singals.
+
+There are two independent hardware PWM controllers. I2S is using one of them.
 Software PWM works on all GPIO pins.
 
 Hardware PWM works on:

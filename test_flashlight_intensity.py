@@ -54,7 +54,7 @@ if __name__ == '__main__':
     socket = context.socket(zmq.REQ)
     socket.connect(args.zmqport)
 
-    data_flash  = flashData(show=flashstate["brightness"])
+    data_flash  = flashData(show=flashstate["brightness"], intensityt=0.75)
     flash_msgpack = msgpack.packb(obj2dict(vars(data_flash)))
     socket.send_multipart([b"flash", flash_msgpack])
 

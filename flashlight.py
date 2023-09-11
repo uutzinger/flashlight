@@ -106,7 +106,7 @@ class FlashLight:
         self.state = flashstate["on"]
         self.pin.duty_cycle = int(self.intensity / 100. * 65535) 
 
-    async def hum_start(self, stop_event: asyncio.Event, pause_event: asyncio.Event):
+    async def hum_start(self, stop_event: asyncio.Event):
         HUMINTENEND   = self.intensity
         HUMINTENSTART = self.intensity * (1. - HUMINTENFRAC)
         HUMINTENINC   = (HUMINTENEND - HUMINTENSTART) / 20.
@@ -267,23 +267,37 @@ async def main(args: argparse.Namespace):
         await zmq.dataReady.wait()
         zmq.dataReady.clear()
 
+        # On / Off
         if zmq.data_flash.state == flashstate["on"]:
-            flash.on()
+            if hum_task == None:
+                flash.on()
+            else:
+                logger.log(logging.ERROR, 'Falshlight other animation is running...')
 
         elif zmq.data_flash.state == flashstate["off"]:
-            flash.off()
+            if hum_task == None:
+                flash.off()
+            else:
+                logger.log(logging.ERROR, 'Falshlight other animation is running...')
 
         elif zmq.data_flash.state == flashstate["brightness"]:
-            flash.brightness(zmq.data_flash.intensity)
+            if zmq.data_flash.intensity < 1.0 and zmq.data_flash.intensity >= 0.:
+                flash.brightness(zmq.data_flash.intensity)
+            else:
+                logging.log(logging.ERROR, 'Flashlight intensity out of range...')
 
+        # Humming
         elif zmq.data_flash.state == flashstate["hum"]:
-            hum_task = asyncio.create_task(flash.hum_start(stop_event=hum_stop_event))
+            if hum_task == None:
+                hum_task = asyncio.create_task(flash.hum_start(stop_event=hum_stop_event))
+            else:
+                logger.log(logging.ERROR, 'Falshlight other animation is running...')
 
         elif zmq.data_flash.state == flashstate["hum_stop"]:
             hum_stop_event.set()
 
+        # Exit program
         elif zmq.data_flash.state == flashstate["stop"]:
-            # exit program
             for stop_event in stop_events: 
                 stop_event.set()
             # Make sure lights are off
