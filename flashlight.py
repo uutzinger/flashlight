@@ -31,7 +31,7 @@ if os.name != 'nt':
 PWM_PIN       = board.D13 # PWM pin, use same pin for left and right light
 PWM_FREQUENCY = 500       # 100Hz .. 1kHz   
 
-BRIGHTNESS    = 0.25
+BRIGHTNESS    = 25
 HUMINTENFRAC  = 0.3
 HUMINTERVAL   = 3.0 # sec
 
@@ -88,12 +88,12 @@ class FlashLight:
 
     def __init__(self, logger=None):
         self.state = flashstate['off']
-        self.intensity = BRIGHTNESS
+        self.intensity = BRIGHTNESS/100.
         self.pin = pwmio.PWMOut(PWM_PIN, frequency=PWM_FREQUENCY, duty_cycle=0)
-        self.pin.duty_cycle = int(self.intensity / 100. * 65535) 
+        self.pin.duty_cycle = int(self.intensity * 65535) 
         self.logger = logger
 
-    def brightness(self, brightness: float):
+    def brightness(self, brightness: float = BRIGHTNESS/100.):
         self.intensity = brightness
         if self.state == flashstate['on']:
             self.on()
@@ -104,7 +104,7 @@ class FlashLight:
 
     def on(self):
         self.state = flashstate["on"]
-        self.pin.duty_cycle = int(self.intensity / 100. * 65535) 
+        self.pin.duty_cycle = int(self.intensity * 65535) 
 
     async def hum_start(self, stop_event: asyncio.Event):
         HUMINTENEND   = self.intensity
